@@ -161,7 +161,8 @@ async function integrityOf(url) {
 async function ensureRegistered(token, siteId) {
   const data = await wf(token, 'GET', '/sites/' + siteId + '/registered_scripts');
   const list = (data && data.registeredScripts) || [];
-  const found = list.find((s) => s.displayName === SCRIPT_NAME && s.version === ENV.scriptVersion && s.hostedLocation === ENV.scriptUrl);
+  // Same name and version means the same bytes, even if the CDN path changed (tag vs commit URL)
+  const found = list.find((s) => s.displayName === SCRIPT_NAME && s.version === ENV.scriptVersion);
   if (found) return found;
   const integrityHash = await integrityOf(ENV.scriptUrl);
   return wf(token, 'POST', '/sites/' + siteId + '/registered_scripts/hosted', {
