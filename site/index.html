@@ -1,0 +1,417 @@
+<title>waform for Webflow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a short statement up top, then a two-column workbench (settings left, live output right) that stacks on phones; reference material below. */
+  :root {
+    --bg: #f5f8f6;
+    --surface: #ffffff;
+    --fg: #14211b;
+    --muted: #5d6f67;
+    --line: #d7e0db;
+    --accent: #15994d;
+    --accent-ink: #ffffff;
+    --bubble: #dcf8c6;
+    --bubble-ink: #14211b;
+    --chat-bg: #e4ddd3;
+    --code-bg: #0f1a15;
+    --code-fg: #d6ecdf;
+    --warn: #b4530a;
+    --font-display: "Bricolage Grotesque", "Arial Narrow", Arial, sans-serif;
+    --font-body: "Figtree", "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1512; --surface: #162019; --fg: #e8efeb; --muted: #94a59c; --line: #28362f;
+      --accent: #36d375; --accent-ink: #0a1a10; --bubble: #0f5a44; --bubble-ink: #e8efeb;
+      --chat-bg: #0b1310; --code-bg: #0a100d; --code-fg: #cfe6d9; --warn: #f0a35a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1512; --surface: #162019; --fg: #e8efeb; --muted: #94a59c; --line: #28362f;
+    --accent: #36d375; --accent-ink: #0a1a10; --bubble: #0f5a44; --bubble-ink: #e8efeb;
+    --chat-bg: #0b1310; --code-bg: #0a100d; --code-fg: #cfe6d9; --warn: #f0a35a; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0 48px;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  a { color: var(--accent); }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+  h1 { font-size: clamp(32px, 5vw, 54px); font-weight: 700; letter-spacing: -0.02em; max-width: 18ch; }
+  h2 { font-size: clamp(22px, 3vw, 30px); font-weight: 700; letter-spacing: -0.01em; }
+  h3 { font-size: 18px; font-weight: 700; }
+  p { margin: 0; max-width: 62ch; }
+  .muted { color: var(--muted); }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 20px; border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: baseline; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
+  .brand small { font-family: var(--font-body); font-weight: 500; font-size: 13px; color: var(--muted); }
+  .top nav { display: flex; gap: 18px; font-size: 14px; font-weight: 500; }
+  .top nav a { color: var(--fg); text-decoration: none; }
+  .top nav a:hover, .top nav a:focus-visible { color: var(--accent); }
+
+  .hero { padding-block: 44px 28px; display: grid; gap: 14px; }
+  .hero p { font-size: 18px; }
+  .hero .facts { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: var(--muted); }
+  .hero .facts span::before { content: "\2713\00a0"; color: var(--accent); font-weight: 700; }
+
+  .gen { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; min-width: 0; }
+  .panel header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .fields { display: grid; gap: 14px; }
+  .field { display: grid; gap: 6px; }
+  .field label { font-size: 14px; font-weight: 600; }
+  .field .hint { font-size: 13px; color: var(--muted); }
+  .field .hint code { font-family: var(--font-mono); font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+  input[type="text"], input[type="tel"], input[type="url"], select, textarea {
+    width: 100%; font: inherit; font-size: 15px; color: var(--fg); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0;
+  }
+  textarea { font-family: var(--font-mono); font-size: 13.5px; line-height: 1.5; resize: vertical; min-height: 96px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .field.bad input { border-color: var(--warn); }
+  .field .error { display: none; font-size: 13px; color: var(--warn); }
+  .field.bad .error { display: block; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+  .check input { margin-top: 3px; accent-color: var(--accent); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .sticky { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); display: grid; gap: 20px; }
+  .chat { background: var(--chat-bg); border-radius: 12px; padding: 18px 16px; display: grid; gap: 8px; justify-items: end; }
+  .bubble {
+    background: var(--bubble); color: var(--bubble-ink); border-radius: 12px 2px 12px 12px;
+    padding: 9px 12px; max-width: 92%; font-size: 14.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+  }
+  .bubble .time { display: block; text-align: right; font-size: 11px; opacity: 0.65; margin-top: 4px; }
+  .chat .to { font-size: 12px; color: var(--muted); justify-self: start; }
+  .samples { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--muted); }
+  .samples span { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; font-family: var(--font-mono); }
+
+  pre { margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; tab-size: 2; }
+  .codebar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .btn { font: inherit; font-weight: 600; font-size: 14px; border-radius: 8px; padding: 9px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--fg); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn:hover { filter: brightness(1.05); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .actions .muted { font-size: 13px; }
+
+  section.doc { padding-block: 44px 0; display: grid; gap: 18px; }
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; counter-reset: step; }
+  .step { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 8px; align-content: start; }
+  .step::before { counter-increment: step; content: counter(step); font-family: var(--font-display); font-weight: 700; font-size: 26px; color: var(--accent); line-height: 1; }
+  .step p { font-size: 15px; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td code, li code, p code { font-family: var(--font-mono); font-size: 12.5px; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+  ul.notes { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 70ch; }
+  footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 20px; }
+
+  @media (max-width: 820px) {
+    .gen { grid-template-columns: 1fr; }
+    .sticky { position: static; }
+    .steps { grid-template-columns: 1fr; }
+    .two { grid-template-columns: 1fr; }
+    .top nav { display: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .btn { transition: filter 120ms ease; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">waform <small>for Webflow forms</small></div>
+    <nav aria-label="Sections">
+      <a href="#generator">Generator</a>
+      <a href="#install">Install</a>
+      <a href="#reference">Reference</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <span class="eyebrow">One script tag, no backend</span>
+    <h1>Every Webflow form submission, continued on WhatsApp.</h1>
+    <p class="muted">The visitor fills in your form, Webflow records it as usual, and WhatsApp opens with the answers already typed into the message. Your sales inbox is the chat you already check.</p>
+    <div class="facts">
+      <span>Keeps Webflow notifications and the Forms tab</span>
+      <span>Works with any number of forms</span>
+      <span>6 KB, no cookies, no tracking</span>
+    </div>
+  </section>
+
+  <main class="gen" id="generator">
+    <div class="panel">
+      <header>
+        <h2>Settings</h2>
+        <span class="muted" style="font-size:13px">Changes update the preview</span>
+      </header>
+      <div class="fields">
+        <div class="field" id="field-number">
+          <label for="f-number">WhatsApp number</label>
+          <input type="tel" id="f-number" value="90 532 000 00 00" autocomplete="off" spellcheck="false">
+          <span class="hint">International format with country code, no leading zeros. Spaces and + are fine.</span>
+          <span class="error">Enter 8 to 15 digits including the country code, for example 905320000000.</span>
+        </div>
+        <div class="field">
+          <label for="f-template">Message template</label>
+          <textarea id="f-template" rows="4" spellcheck="false">Hi, I just sent a request from your website.
+{all}</textarea>
+          <span class="hint">Placeholders: <code>{all}</code> lists every filled field. Use a field name such as <code>{name}</code> or <code>{email}</code>, plus <code>{page}</code>, <code>{url}</code> and <code>{date}</code>.</span>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="f-mode">Behaviour</label>
+            <select id="f-mode">
+              <option value="auto" selected>Auto (recommended)</option>
+              <option value="redirect">Same tab, after the form succeeds</option>
+              <option value="newtab">New tab right away</option>
+              <option value="button">Button in the success message only</option>
+            </select>
+            <span class="hint">Auto: phones go straight to WhatsApp, desktops open a new tab and get a button too.</span>
+          </div>
+          <div class="field">
+            <label for="f-button">Button text</label>
+            <input type="text" id="f-button" value="Continue on WhatsApp">
+            <span class="hint">Shown inside the Webflow success message.</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-exclude">Fields to leave out of {all}</label>
+          <input type="text" id="f-exclude" placeholder="e.g. newsletter, privacy" autocomplete="off">
+          <span class="hint">Comma separated field names. Hidden fields are always left out.</span>
+        </div>
+        <label class="check" for="f-submit">
+          <input type="checkbox" id="f-submit" checked>
+          <span>Keep the normal Webflow submission (email notifications, Forms tab, integrations). Untick for an instant jump to WhatsApp with nothing stored in Webflow.</span>
+        </label>
+        <div class="field">
+          <label for="f-cdn">Script URL</label>
+          <input type="url" id="f-cdn" value="https://cdn.jsdelivr.net/gh/silit/waform@0.1.0/dist/waform.min.js" spellcheck="false">
+          <span class="hint">Where waform.min.js is hosted. Leave as is once the official URL is set.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sticky">
+      <div class="panel">
+        <header>
+          <h2>Message preview</h2>
+          <span class="muted" style="font-size:13px">Example submission</span>
+        </header>
+        <div class="chat">
+          <span class="to" id="out-to">To +90 532 000 00 00</span>
+          <div class="bubble"><span id="out-message"></span><span class="time">12:48</span></div>
+        </div>
+        <div class="samples" style="margin-top:12px">
+          <span>Full Name = Ayşe Yılmaz</span>
+          <span>Email = ayse@example.com</span>
+          <span>Phone = +90 532 000 00 00</span>
+          <span>Message = I would like a quote for two people.</span>
+        </div>
+        <div class="actions" style="margin-top:14px">
+          <a class="btn primary" id="out-test" href="#" target="_blank" rel="noopener">Open this message in WhatsApp</a>
+          <span class="muted">Opens wa.me with the example above, so you can test on your own phone.</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="codebar">
+          <h2>Your snippet</h2>
+          <button class="btn" type="button" id="copy">Copy snippet</button>
+        </div>
+        <pre><code id="out-snippet"></code></pre>
+        <p class="muted" style="margin-top:12px;font-size:14px">Paste it in Webflow under Site settings, Custom code, Footer code. For one page only, use the page's "Before &lt;/body&gt; tag" box instead. Publish the site and send a test.</p>
+      </div>
+    </div>
+  </main>
+
+  <section class="doc" id="install">
+    <div>
+      <span class="eyebrow">Install</span>
+      <h2>Three steps, about five minutes</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <h3>Paste the snippet</h3>
+        <p>Site settings, Custom code, Footer code. Save and publish. The script loads after the page, so it never slows the page down.</p>
+      </div>
+      <div class="step">
+        <h3>Give every form a number</h3>
+        <p>The snippet sets one number for the whole site. A form can use another number through a custom attribute on the form element: <code>data-wa-number</code> with the number as the value. Opt a form out with <code>data-wa</code> set to <code>off</code>.</p>
+      </div>
+      <div class="step">
+        <h3>Send a test</h3>
+        <p>Submit the form on the published site. Desktop opens a WhatsApp tab and shows a button in the success message; phones jump to WhatsApp after Webflow confirms the submission.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="doc" id="reference">
+    <div>
+      <span class="eyebrow">Reference</span>
+      <h2>Every setting, three ways to set it</h2>
+      <p class="muted" style="margin-top:8px">Priority from low to high: <code>window.WAFormConfig</code> in the snippet, then attributes on the script tag, then attributes on the form element. Field names in placeholders match the Webflow field name or its label, ignoring case, spaces and dashes.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Form attribute</th><th>Config key</th><th>What it does</th><th>Default</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>data-wa-number</code></td><td><code>number</code></td><td>WhatsApp number in international format. Non-digits are stripped.</td><td>none, required</td></tr>
+          <tr><td><code>data-wa-template</code></td><td><code>template</code></td><td>Message text with placeholders. In attributes, write <code>\n</code> for a line break.</td><td><code>{all}</code></td></tr>
+          <tr><td><code>data-wa-intro</code></td><td><code>intro</code></td><td>A first line added above the template, for example "New lead from the pricing page".</td><td>empty</td></tr>
+          <tr><td><code>data-wa-mode</code></td><td><code>mode</code></td><td><code>auto</code>, <code>redirect</code>, <code>newtab</code> or <code>button</code>.</td><td><code>auto</code></td></tr>
+          <tr><td><code>data-wa-submit</code></td><td><code>submit</code></td><td><code>false</code> skips the Webflow submission and opens WhatsApp at once.</td><td><code>true</code></td></tr>
+          <tr><td><code>data-wa-button-text</code></td><td><code>buttonText</code></td><td>Text of the button in the success message.</td><td>Continue on WhatsApp</td></tr>
+          <tr><td><code>data-wa-button-class</code></td><td><code>buttonClass</code></td><td>Your own class for the button. Removes the built-in green style.</td><td>empty</td></tr>
+          <tr><td><code>data-wa-exclude</code></td><td><code>exclude</code></td><td>Comma separated field names left out of <code>{all}</code>.</td><td>empty</td></tr>
+          <tr><td><code>data-wa-delay</code></td><td><code>delay</code></td><td>Milliseconds to wait for the success message before continuing anyway.</td><td><code>2500</code></td></tr>
+          <tr><td><code>data-wa="off"</code></td><td></td><td>Leaves this form alone.</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="notes">
+      <li>Checkboxes send "Yes" or their value; checkbox groups with the same name are joined with commas; selects send the option text.</li>
+      <li>On iPhone, Safari can show the wa.me page with a "Continue to chat" button first, because the jump happens after Webflow confirms the submission. For an instant jump set <code>data-wa-submit="false"</code>.</li>
+      <li>Forms outside Webflow's form block work too. Use <code>data-wa-submit="false"</code> or <code>data-wa-mode="button"</code> for those.</li>
+      <li>From code, listen for <code>waform:submit</code> on the form. The event carries the message and the link, and <code>preventDefault()</code> cancels the jump. <code>WAForm.linkFor(form)</code> returns the link for your own buttons.</li>
+      <li>Nothing is stored or sent anywhere except to WhatsApp and to Webflow. No cookies, no analytics.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>waform 0.1.0</span>
+    <span>MIT licensed</span>
+    <span>Not affiliated with WhatsApp or Webflow.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var SAMPLE = [
+    ['Full Name', 'Ayşe Yılmaz'],
+    ['Email', 'ayse@example.com'],
+    ['Phone', '+90 532 000 00 00'],
+    ['Message', 'I would like a quote for two people.']
+  ];
+  var ALIASES = { name: 'Full Name', fullname: 'Full Name', email: 'Email', emailaddress: 'Email', phone: 'Phone', phonenumber: 'Phone', message: 'Message' };
+
+  function norm(s) { return String(s || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+  function digits(s) { return String(s || '').replace(/[^\d]/g, ''); }
+
+  function sampleMap(exclude) {
+    var ex = {};
+    String(exclude || '').split(',').forEach(function (k) { if (norm(k)) ex[norm(k)] = 1; });
+    var fields = SAMPLE.filter(function (f) { return !ex[norm(f[0])] && !ex[norm(ALIASES[norm(f[0])] || '')]; });
+    // also drop by alias keys (e.g. "name" excludes Full Name)
+    fields = fields.filter(function (f) {
+      for (var k in ALIASES) if (ex[k] && ALIASES[k] === f[0]) return false;
+      return true;
+    });
+    var map = {};
+    fields.forEach(function (f) { map[norm(f[0])] = f[1]; });
+    for (var k in ALIASES) if (map[norm(ALIASES[k])] != null) map[k] = map[norm(ALIASES[k])];
+    return { fields: fields, map: map };
+  }
+
+  function buildMessage(template, data) {
+    var text = String(template || '{all}').replace(/\{([^{}]+)\}/g, function (m, raw) {
+      var k = norm(raw);
+      if (k === 'all') return data.fields.map(function (f) { return f[0] + ': ' + f[1]; }).join('\n');
+      if (k === 'url') return 'https://yoursite.com/contact';
+      if (k === 'page') return 'Contact';
+      if (k === 'date') return new Date().toLocaleString();
+      return data.map[k] != null ? data.map[k] : '';
+    });
+    return text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function formatNumber(d) {
+    if (!d) return '';
+    return '+' + d;
+  }
+
+  function render() {
+    var number = digits($('f-number').value);
+    var valid = number.length >= 8 && number.length <= 15;
+    $('field-number').classList.toggle('bad', !valid && number.length > 0);
+    var template = $('f-template').value;
+    var mode = $('f-mode').value;
+    var buttonText = $('f-button').value.trim();
+    var exclude = $('f-exclude').value.trim();
+    var submit = $('f-submit').checked;
+    var cdn = $('f-cdn').value.trim();
+
+    var data = sampleMap(exclude);
+    var message = buildMessage(template, data);
+    $('out-message').textContent = message || '(empty message)';
+    $('out-to').textContent = 'To ' + (valid ? formatNumber(number) : 'your number');
+    var link = 'https://wa.me/' + (valid ? number : '') + '?text=' + encodeURIComponent(message);
+    $('out-test').setAttribute('href', valid ? link : '#');
+
+    var cfg = { number: valid ? number : 'YOUR-NUMBER' };
+    if (template.trim() !== '{all}') cfg.template = template;
+    if (mode !== 'auto') cfg.mode = mode;
+    if (buttonText && buttonText !== 'Continue on WhatsApp') cfg.buttonText = buttonText;
+    if (exclude) cfg.exclude = exclude;
+    if (!submit) cfg.submit = false;
+
+    var lines = Object.keys(cfg).map(function (k) { return '    ' + k + ': ' + JSON.stringify(cfg[k]); });
+    var snippet = '<!-- waform: Site settings > Custom code > Footer code -->\n' +
+      '<script>\n  window.WAFormConfig = {\n' + lines.join(',\n') + '\n  };\n<\/script>\n' +
+      '<script src="' + (cdn || 'https://cdn.jsdelivr.net/gh/silit/waform@0.1.0/dist/waform.min.js') + '" defer><\/script>';
+    $('out-snippet').textContent = snippet;
+  }
+
+  ['f-number', 'f-template', 'f-mode', 'f-button', 'f-exclude', 'f-submit', 'f-cdn'].forEach(function (id) {
+    $(id).addEventListener('input', render);
+    $(id).addEventListener('change', render);
+  });
+
+  $('copy').addEventListener('click', function () {
+    var text = $('out-snippet').textContent;
+    var btn = this;
+    function done(ok) {
+      btn.textContent = ok ? 'Copied' : 'Select and copy';
+      setTimeout(function () { btn.textContent = 'Copy snippet'; }, 1800);
+    }
+    function fallback() {
+      try {
+        var range = document.createRange();
+        range.selectNodeContents($('out-snippet'));
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        done(false);
+      } catch (e) { done(false); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else {
+      fallback();
+    }
+  });
+
+  $('out-test').addEventListener('click', function (e) {
+    if (this.getAttribute('href') === '#') { e.preventDefault(); $('f-number').focus(); }
+  });
+
+  render();
+})();
+</script>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>waform Privacy Policy</title>
+<style>
+  :root { --bg: #f5f8f6; --fg: #14211b; --muted: #5d6f67; --line: #d7e0db; --accent: #15994d; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0e1512; --fg: #e8efeb; --muted: #94a59c; --line: #28362f; --accent: #36d375; color-scheme: dark; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 Figtree, "Segoe UI", Helvetica, Arial, sans-serif; padding: 0 16px 48px; }
+  main { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 30px; margin: 32px 0 6px; line-height: 1.15; }
+  h2 { font-size: 20px; margin: 28px 0 8px; }
+  p, li { max-width: 68ch; }
+  .muted { color: var(--muted); }
+  a { color: var(--accent); }
+  nav { padding: 18px 0; border-bottom: 1px solid var(--line); }
+  nav a { text-decoration: none; color: var(--fg); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="/">waform</a></nav>
+  <h1>Privacy Policy</h1>
+  <p class="muted">Last updated: 28 October 2026</p>
+
+  <h2>What waform is</h2>
+  <p>waform is a script and a Webflow app that opens WhatsApp with a pre-filled message after a visitor submits a form on a Webflow site. It is operated by its developer (contact details below). This policy covers the waform website, the Webflow app, and the script installed on customer sites.</p>
+
+  <h2>The script on your site</h2>
+  <p>The script runs in the visitor's browser only. It reads the fields of the submitted form to build a message, then opens a wa.me link. It does not send form data to waform or to any server other than the ones the site already uses: the form still submits to Webflow as before, and the message goes to WhatsApp on the visitor's device. The script sets no cookies and includes no analytics.</p>
+
+  <h2>The Webflow app</h2>
+  <p>When you install waform through Webflow, Webflow asks you to authorize the sites waform may change. waform then uses that permission to read the list of authorized sites, add one script to the site's custom code, and, if you choose, publish the site. The access token Webflow issues is kept only in an encrypted cookie in your own browser for up to one hour. waform stores no tokens, site data, or settings on its servers. Your settings (number, message template) are written into the script tag on your own Webflow site, where you can see and edit them.</p>
+
+  <h2>Data we hold</h2>
+  <p>None on a permanent basis. Our hosting provider keeps standard server logs (IP address, time, requested page) for a limited period for security and debugging. If you email us for support, we keep that correspondence.</p>
+
+  <h2>Third parties</h2>
+  <ul>
+    <li>Webflow, which provides the sites and the app platform.</li>
+    <li>The CDN that serves the script file (jsDelivr).</li>
+    <li>Our hosting provider for the website and the app (Vercel).</li>
+    <li>WhatsApp, which the visitor opens on their own device. WhatsApp is operated by Meta and has its own privacy policy.</li>
+  </ul>
+
+  <h2>Your choices</h2>
+  <p>Remove waform from a site at any time through the app or by deleting the script from Site settings in Webflow. Revoke the app's access from your Webflow workspace settings.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy: see the support email on the Webflow Marketplace listing or the waform website.</p>
+</main>
+</body>
+</html>

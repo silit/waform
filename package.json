@@ -1,0 +1,39 @@
+{
+  "name": "waform",
+  "version": "0.1.0",
+  "description": "Turn any Webflow form into a WhatsApp conversation. No backend, one script tag.",
+  "main": "dist/waform.min.js",
+  "files": [
+    "dist",
+    "src",
+    "api",
+    "public",
+    "vercel.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/run.js && node test/app.js",
+    "build": "terser src/waform.js --compress --mangle --comments \"/^!/\" --source-map \"url='waform.min.js.map'\" -o dist/waform.min.js && cp src/waform.js dist/waform.js",
+    "prepublishOnly": "npm run build && npm test",
+    "test:script": "node test/run.js",
+    "test:app": "node test/app.js",
+    "logo": "node -e \"const s=require('sharp');(async()=>{await s('assets/logo.svg').png({palette:true,colors:16}).toFile('assets/logo-900.png');await s('assets/logo.svg').resize(512,512).png({palette:true,colors:16}).toFile('public/logo-512.png');await s('assets/logo.svg').resize(64,64).png().toFile('public/favicon.png')})()\""
+  },
+  "keywords": [
+    "webflow",
+    "whatsapp",
+    "form",
+    "wa.me",
+    "lead"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^30.1.3",
+    "sharp": "^0.35.5",
+    "terser": "^5.51.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
