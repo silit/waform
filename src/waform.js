@@ -1,4 +1,4 @@
-/*! waform v0.1.0 | Webflow form to WhatsApp | MIT License */
+/*! waform v0.1.1 | Webflow form to WhatsApp | MIT License */
 /*
  * waform turns any Webflow form into a WhatsApp conversation.
  *
@@ -24,22 +24,23 @@
  *   buttonClass [data-wa-button-class] Use your own class for the button instead of the built-in style
  *   exclude     [data-wa-exclude]      Comma separated field names to leave out of {all}
  *   delay       [data-wa-delay]        Milliseconds to wait for the success state before continuing anyway (default 2500)
+ *   desktop     [data-wa-desktop]      wa | web. Where desktop links go: wa.me (choose app or web) or straight to WhatsApp Web (default wa)
  *
  * Opt a single form out with data-wa="off".
  *
  * Modes
  *   auto      Mobile: open WhatsApp in the same tab after the form succeeds.
- *             Desktop: open WhatsApp in a new tab right away and also show a button in the success message.
+ *             Desktop: show a "Continue on WhatsApp" button in the success message, nothing opens on its own.
  *   redirect  Same tab after success, on every device.
  *   newtab    New tab right away (inside the click, so popup blockers allow it), plus the button.
- *   button    Only show a "Continue on WhatsApp" button in the success message.
+ *   button    Only show the button in the success message, on every device.
  */
 (function (window, document) {
   'use strict';
 
   if (!window || !document || window.WAForm) return;
 
-  var VERSION = '0.1.0';
+  var VERSION = '0.1.1';
 
   var DEFAULTS = {
     number: '',
@@ -50,7 +51,8 @@
     buttonText: 'Continue on WhatsApp',
     buttonClass: '',
     exclude: '',
-    delay: 2500
+    delay: 2500,
+    desktop: 'wa'
   };
 
   var ATTR = {
@@ -62,7 +64,8 @@
     buttonText: 'data-wa-button-text',
     buttonClass: 'data-wa-button-class',
     exclude: 'data-wa-exclude',
-    delay: 'data-wa-delay'
+    delay: 'data-wa-delay',
+    desktop: 'data-wa-desktop'
   };
 
   var SKIP_TYPES = { submit: 1, button: 1, reset: 1, image: 1, file: 1, hidden: 1, password: 1 };
@@ -130,6 +133,7 @@
     cfg.submit = toBool(cfg.submit);
     cfg.delay = parseInt(cfg.delay, 10);
     if (isNaN(cfg.delay) || cfg.delay < 0) cfg.delay = DEFAULTS.delay;
+    cfg.desktop = trim(cfg.desktop).toLowerCase() === 'web' ? 'web' : 'wa';
     return cfg;
   }
 
@@ -233,14 +237,22 @@
     return trim(text.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n'));
   }
 
-  function link(number, text) {
+  // target: 'wa' (wa.me, works everywhere) or 'web' (straight to WhatsApp Web, desktop only)
+  function link(number, text, target) {
+    if (target === 'web') {
+      return 'https://web.whatsapp.com/send?phone=' + cleanNumber(number) + '&text=' + encodeURIComponent(text);
+    }
     return 'https://wa.me/' + cleanNumber(number) + '?text=' + encodeURIComponent(text);
+  }
+
+  function targetFor(cfg) {
+    return (cfg.desktop === 'web' && !isMobile()) ? 'web' : 'wa';
   }
 
   function linkFor(form) {
     var cfg = readConfig(form);
     var data = collect(form, cfg);
-    return link(cfg.number, build(cfg, data));
+    return link(cfg.number, build(cfg, data), targetFor(cfg));
   }
 
   function navigate(url) {
@@ -350,13 +362,13 @@
 
     var data = collect(form, cfg);
     var text = build(cfg, data);
-    var url = link(cfg.number, text);
+    var url = link(cfg.number, text, targetFor(cfg));
 
     // Listeners can inspect or cancel: form.addEventListener('waform:submit', e => e.preventDefault())
     if (!dispatch(form, 'waform:submit', { url: url, text: text, fields: data.fields, config: cfg })) return;
 
     var mode = cfg.mode;
-    if (mode === 'auto') mode = isMobile() ? 'redirect' : 'newtab';
+    if (mode === 'auto') mode = isMobile() ? 'redirect' : 'button';
 
     if (!cfg.submit) {
       // Skip the Webflow submission entirely

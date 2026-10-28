@@ -90,22 +90,24 @@ function decodeText(url) {
     const doc = window.document;
     let opened = null;
     window.open = (url) => { opened = url; return { opener: 1 }; };
-    assert(window.WAForm && window.WAForm.version === '0.1.0', 'WAForm global is exposed');
+    assert(window.WAForm && window.WAForm.version === '0.1.1', 'WAForm global is exposed');
     const form = doc.getElementById('email-form');
     eq(form.getAttribute('data-waform-bound'), '1', 'form is bound at load');
     fill(doc);
     const ev = submit(form, window);
     eq(ev.defaultPrevented, false, 'native/Webflow submission is not prevented');
-    assert(opened && opened.startsWith('https://wa.me/905321234567?text='), 'new tab opened with cleaned number');
-    const text = decodeText(opened);
+    eq(opened, null, 'desktop auto mode opens nothing by itself');
+    const expectedUrl = window.WAForm.linkFor(form);
+    assert(expectedUrl.startsWith('https://wa.me/905321234567?text='), 'link uses the cleaned number');
+    const text = decodeText(expectedUrl);
     eq(text, 'Full Name: Ayşe Yılmaz\nEmail Address: ayse@example.com\nTreatment: Implants\nSubscribe to newsletter: Yes\nMessage: Hello, I would like a quote.', '{all} lists labels and values, skips hidden, maps select text');
     eq(doc.querySelector('.waform-button'), null, 'no button before success');
     doc.querySelector('.w-form-done').style.display = 'block';
     await tick();
     const btn = doc.querySelector('.w-form-done .waform-button');
-    assert(btn, 'fallback button injected into success message');
+    assert(btn, 'button injected into success message');
     if (btn) {
-      eq(btn.getAttribute('href'), opened, 'button links to the same wa.me url');
+      eq(btn.getAttribute('href'), expectedUrl, 'button links to the wa.me url');
       eq(btn.textContent, 'Continue on WhatsApp', 'default button text');
       eq(btn.getAttribute('target'), '_blank', 'button opens in a new tab');
     }
@@ -223,7 +225,22 @@ function decodeText(url) {
     assert(dom.warnings.some(w => w.includes('No valid WhatsApp number')), 'short number logs a warning');
   }
 
-  console.log('8. waform:submit event can cancel');
+  console.log('8. newtab mode opens right away; desktop=web targets WhatsApp Web on desktop only');
+  {
+    const dom = await makeDom({ scriptAttrs: 'data-wa-mode="newtab" data-wa-desktop="web"' });
+    const { window } = dom;
+    const doc = window.document;
+    let opened = null;
+    window.open = (url) => { opened = url; return { opener: 1 }; };
+    fill(doc);
+    submit(doc.getElementById('email-form'), window);
+    assert(opened && opened.startsWith('https://web.whatsapp.com/send?phone=905321234567&text='), 'desktop newtab goes straight to WhatsApp Web');
+    const mobile = await makeDom({ ua: 'Mozilla/5.0 (Linux; Android 14) Mobile', scriptAttrs: 'data-wa-desktop="web"' });
+    fill(mobile.window.document);
+    assert(mobile.window.WAForm.linkFor(mobile.window.document.getElementById('email-form')).startsWith('https://wa.me/'), 'mobile keeps wa.me even with desktop=web');
+  }
+
+  console.log('9. waform:submit event can cancel');
   {
     const dom = await makeDom();
     const { window } = dom;
